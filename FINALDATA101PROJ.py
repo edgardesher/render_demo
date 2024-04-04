@@ -133,6 +133,7 @@ df_fies2018['Greater Region'] = df_fies2018['W_REGN_N'].apply(region_to_group)
 # CSS 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css', 'styles.css']
 app = Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 
 
 # App layout
