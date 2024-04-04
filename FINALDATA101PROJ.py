@@ -1,19 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
-get_ipython().system('pip install dash')
-
-
-# In[2]:
-
-
-get_ipython().system('pip install dash-tools')
-
-
-# In[3]:
+# In[10]:
 
 
 import pandas as pd
@@ -26,7 +14,7 @@ pd.DataFrame.iteritems = pd.DataFrame.items
 pd.options.mode.chained_assignment = None
 
 
-# In[4]:
+# In[11]:
 
 
 #SEPARATE DATA LOADING BECAUSE IT TAKES LONG TO LOAD
@@ -35,7 +23,7 @@ df_fies2021 = pd.read_csv('https://raw.githubusercontent.com/edgardesher/finalpr
 df_fies2018 = pd.read_csv('https://raw.githubusercontent.com/edgardesher/finalproject/main/fies_2018_final.csv')
 
 
-# In[5]:
+# In[12]:
 
 
 # Load data for all apps
@@ -51,7 +39,7 @@ with urlopen('https://raw.githubusercontent.com/edgardesher/data101/main/country
     geo_ph_regions = json.load(response)
 
 
-# In[6]:
+# In[13]:
 
 
 ##ONE LAYOUT
