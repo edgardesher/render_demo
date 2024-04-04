@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[10]:
+# In[2]:
 
 
 import pandas as pd
@@ -9,12 +9,13 @@ import plotly.express as px
 import numpy as np
 import requests
 from dash import Dash, dcc, html, Input, Output,State
+import dash_bootstrap_components as dbc
 import json
 pd.DataFrame.iteritems = pd.DataFrame.items
 pd.options.mode.chained_assignment = None
 
 
-# In[11]:
+# In[3]:
 
 
 #SEPARATE DATA LOADING BECAUSE IT TAKES LONG TO LOAD
@@ -23,7 +24,7 @@ df_fies2021 = pd.read_csv('https://raw.githubusercontent.com/edgardesher/finalpr
 df_fies2018 = pd.read_csv('https://raw.githubusercontent.com/edgardesher/finalproject/main/fies_2018_final.csv')
 
 
-# In[12]:
+# In[4]:
 
 
 # Load data for all apps
@@ -39,7 +40,7 @@ with urlopen('https://raw.githubusercontent.com/edgardesher/data101/main/country
     geo_ph_regions = json.load(response)
 
 
-# In[13]:
+# In[96]:
 
 
 ##ONE LAYOUT
@@ -67,22 +68,22 @@ region_centers = {
 
 # FROM FINAL GRAPH 2
 legend_updates = {
-    'BREAD': 'Rice, Bread, and Grain',
+    'BREAD': 'Rice & Bread',
     'MEAT': 'Meat',
-    'FISH': 'Fish and Seafood',
-    'FOODOUTSIDE': 'Food Consumed Outside',
+    'FISH': 'Fish & Seafood',
+    'FOODOUTSIDE': 'Food Outside',
     'VEG': 'Vegetables',
-    'MILK': 'Milk and Dairy',
+    'MILK': 'Milk & Dairy',
     'FRUIT': 'Fruits',
     'OTHERFOOD': 'Others',
-    'HOUSINGWATER': 'Housing and Utilities',
+    'HOUSINGWATER': 'Housing & Utilities',
     'MISCELLANEOUS': 'Miscellaneous',
     'TRANSPORT': 'Transportation',
-    'COMMUNICATION': 'Communication and ICT',
-    'HEALTH': 'Health and Medical Care',
-    'DURABLE': 'Durable Furniture and Equipment',
+    'COMMUNICATION': 'Communication',
+    'HEALTH': 'Healthcare',
+    'DURABLE': 'Durable Equipment',
     'OCCASION': 'Special Occasions',
-    'FURNISHING': 'Furniture and Appliances',
+    'FURNISHING': 'Furniture & Appliances',
     'OTHERNFOOD': 'Others'
 }
 
@@ -131,24 +132,45 @@ df_fies2018['Greater Region'] = df_fies2018['W_REGN_N'].apply(region_to_group)
 
 
 # CSS 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css', 'styles.css']
+external_stylesheets = [
+    'https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/cosmo/bootstrap.min.css',
+    'https://codepen.io/chriddyp/pen/bWLwgP.css', 
+    'styles.css'
+]
+
 app = Dash(__name__, external_stylesheets=external_stylesheets)
-server = app.server
 
+# Navbar
+navbar = dbc.NavbarSimple(
+    children=[
+        dbc.NavItem(dbc.NavLink("Choropleth Maps", href="#1-title-heading")),
+        dbc.NavItem(dbc.NavLink("Expenditure Composition", href="#2-title-heading")),
+        dbc.NavItem(dbc.NavLink("Income Composition", href="#3-title-heading")),
+        dbc.NavItem(dbc.NavLink("Scatterplot Matrix", href="#4-title-heading")),
+    ],
+    brand="About",
+    brand_href="#main-title-heading",
+    color="dark",
+    dark=True,
+)
 
-# App layout
 app.layout = html.Div([
+    navbar,
     
-    # App 1 layout
-    html.Div([
-        html.H1("LOREM IPSUM", style={'font-family': 'Lora, serif'}),
-        html.P("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", style={'font-family': 'Open Sans, sans-serif'}),
-        
-        html.Div([
-        html.H1("LOREM IPSUM", style={'font-family': 'Lora'}),
-        html.P("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", style={'font-family': 'Open Sans'}),
-        html.Div([
-        html.H5('Select Year:', style={'fontSize': '16px'}),
+# App layout
+html.Div([
+    html.Br(),
+    html.Br(),
+    html.H1("A Profile of Family Income and Expenditures (FIES) in the Philippines", id="main-title-heading", style={'font-family': 'Lora, serif'}),
+    html.P("Explore the FIES 2018 and 2021 datasets from the Philippine Statistics Authority", style={'font-family': 'Open Sans, sans-serif'}),
+    html.Br(),
+    html.Br(),
+    html.H1("Income and Expenditures by Region and Province", style={'font-family': 'Lora', 'margin-bottom': '3px'}),
+    html.P("The choropleth maps below illustrate the income or expenditure of families by median or total for the years 2018 and 2021. You can click specific regions to drill down and view the same variable for provinces in that region", style={'font-family': 'Open Sans'}),
+    html.Br(),
+
+    html.Div(id='region-info', style={'vertical-align': 'top', 'display': 'flex', 'alignItems': 'flex-start', 'width': '20%', 'display': 'inline-block'}, children=[
+        html.P('Select Year:'),
         dcc.RadioItems(
             id='app1-year-selector',
             options=[
@@ -159,7 +181,8 @@ app.layout = html.Div([
             labelStyle={'display': 'inline-block', 'margin': '10px'},
             className='radio-group'
         ),
-        html.H5('Select Variable:', style={'fontSize': '16px'}),
+        
+        html.P('Select Variable:'),
         dcc.RadioItems(
             id='variable-selector',
             options=[
@@ -170,7 +193,8 @@ app.layout = html.Div([
             labelStyle={'display': 'inline-block', 'margin': '10px'},
             className='radio-group'
         ),
-        html.H5('Select Aggregation:', style={'fontSize': '16px'}),
+        
+        html.P('Select Aggregation:'),
         dcc.RadioItems(
             id='aggregation-selector',
             options=[
@@ -181,24 +205,19 @@ app.layout = html.Div([
             labelStyle={'display': 'inline-block', 'margin': '10px'},
             className='radio-group'
         ),
-    ], className='radio-container', style={'width': '15%', 'display': 'inline-block', 'verticalAlign': 'top'}),
-
-    html.Div([
-        dcc.Graph(id='choropleth-map'),
-    ], style={'display': 'inline-block', 'width': '42.5%'}),
-
-    html.Div([
-        dcc.Graph(id='province-map'),
-    ], style={'display': 'inline-block', 'width': '42.5%'}),
-
-    html.Div(id='region-info', style={'padding': '10px', 'fontSize': '20px'}),
-], style={'padding': '20px'})
     ]),
 
+    # Flex container for maps and region-info
+    html.Div(dcc.Graph(id='choropleth-map'), style={'display': 'inline-block', 'width': '40%'}),
+    html.Div(dcc.Graph(id='province-map'), style={'display': 'inline-block', 'width': '40%'}),
+], style={'width': '90%', 'marginLeft': '5%', 'marginRight': '5%', 'padding': '20px'}),
+
+
     # App 2 layout
-    html.Div([
-    html.H1("LOREM IPSUM", style={'font-family': 'Lora'}),
-    html.P("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", style={'font-family': 'Open Sans'}),
+html.Div([
+    html.H1("Drilling Down on Food and Nonfood Spending", style={'font-family': 'Lora', 'margin-bottom': '3px'}),
+    html.P("The interactive chart below presents the total food and nonfood expenditures of families per region. You can click the food or nonfood bars on the left chart to visualize the components of the provinces in that region", style={'font-family': 'Open Sans'}),
+    html.Br(),
     dcc.RadioItems(
         id='app2-year-selector',
         options=[{'label': str(year), 'value': year} for year in [2018, 2021]],
@@ -206,17 +225,17 @@ app.layout = html.Div([
         style={'marginBottom': 20}, inline=True
     ),
     html.Div([
-        dcc.Graph(id='left-graph'),
-        dcc.Graph(id='right-graph')
+        dcc.Graph(id='left-graph', style={'width': '50%', 'display': 'inline-block'}),
+        dcc.Graph(id='right-graph', style={'width': '50%', 'display': 'inline-block'})
     ], style={'display': 'flex', 'justifyContent': 'space-between', 'width': '100%'}),
-], style={'width': '100%'}),
+], style={'width': '90%', 'marginLeft': '5%', 'marginRight': '5%', 'padding': '20px'}),
 
     # App 3 layout
 html.Div([
     html.Div([
-        html.H1("LOREM IPSUM", style={'font-family': 'Lora'}),
-        html.P("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", style={'font-family': 'Open Sans'}),
-
+        html.H1("How Filipino Families Earn", style={'font-family': 'Lora', 'margin-bottom': '3px'}),
+        html.P("The following graphs break down the percentage shares of the components of family income. You can choose a region and year to visualize what comprises their income and its split per province", style={'font-family': 'Open Sans'}),
+        html.Br(),
         dcc.Dropdown(
             id='region-selector',
             # Sort the unique region names before creating dropdown options
@@ -239,12 +258,13 @@ html.Div([
         dcc.Graph(id='income-donut-chart', style={'width': '50%', 'display': 'inline-block'}),  # Responsive width
         dcc.Graph(id='income-stacked-bar-chart', style={'width': '50%', 'display': 'inline-block'}),  # Responsive width
     ], style={'display': 'flex', 'justifyContent': 'space-between', 'width': '100%'}),
-], style={'width': '100%'}),
+], style={'width': '90%', 'marginLeft': '5%', 'marginRight': '5%', 'padding': '20px'}),
 
     # App 4 Layout
-    html.Div([
-    html.H1("LOREM IPSUM", style={'font-family': 'Lora'}),
-    html.P("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", style={'font-family': 'Open Sans'}),
+html.Div([
+    html.H1("The Relationship Between Income and Expenditures", style={'font-family': 'Lora', 'margin-bottom': '3px'}),
+    html.P("The scatterplot matrix visualizes each household as a point on the matrix, segregated into Luzon, Visayas, and Mindanao by color. The top five and bottom five provinces by median income are shown on the bar graphs below too. You can select a year and visualize one or more regions", style={'font-family': 'Open Sans'}),
+    html.Br(),
     dcc.RadioItems(
         id='year_dropdown',
         options=[
@@ -264,7 +284,7 @@ html.Div([
     ),
     dcc.Graph(id='scatter_matrix'), 
     html.Div(id='top_bottom_charts')
-    ])
+], style={'width': '90%', 'marginLeft': '5%', 'marginRight': '5%', 'padding': '20px'})
 ])
 
 app.index_string = '''
@@ -276,7 +296,7 @@ app.index_string = '''
         {%favicon%}
         {%css%}
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@700&family=Open+Sans&display=swap')
+        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@700&family=Open+Sans&display=swap');
         </style>
     </head>
     <body>
@@ -440,6 +460,8 @@ def update_left_graph(selected_year):
 
     fig.update_layout(showlegend=True, yaxis={'visible': True, 'showticklabels': True})
     fig.update_layout(yaxis_title=None)
+    fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, title=None, traceorder="normal"))
+    fig.update_layout(margin=dict(r=3))
     return fig
 
 # Callback to update the right graph based on click data from the left graph
@@ -470,22 +492,22 @@ def update_right_graph(click_data, selected_year):
     df_melted['Component'] = df_melted['Component'].str.replace('_' + str(selected_year), '').map(legend_updates)
 
     color_discrete_map = {
-        'Rice, Bread, and Grain': '#999999',
+        'Rice & Bread': '#999999',
         'Meat': '#E69F00',
-        'Fish and Seafood': '#56CC59',
-        'Food Consumed Outside': '#6B6B47',
+        'Fish & Seafood': '#56CC59',
+        'Food Outside': '#6B6B47',
         'Vegetables': '#5F9ED1',
-        'Milk and Dairy': '#0D5EAF',
+        'Milk & Dairy': '#0D5EAF',
         'Fruits': '#F0027F',
         'Others': '#4A6B6E',  # Used for OTHERFOOD and OTHERNFOOD
-        'Housing and Utilities': '#8B6F47',
+        'Housing & Utilities': '#8B6F47',
         'Miscellaneous': '#AA4499',
         'Transportation': '#D2B48C',
-        'Communication and ICT': '#E69F00',
-        'Health and Medical Care': '#117733',
-        'Durable Furniture and Equipment': '#669999',
+        'Communication': '#E69F00',
+        'Healthcare': '#117733',
+        'Durable Equipment': '#669999',
         'Special Occasions': '#CC9999',
-        'Furniture and Appliances': '#5E644F'
+        'Furniture & Appliances': '#5E644F'
     }
     
     # Create the plot
@@ -493,6 +515,7 @@ def update_right_graph(click_data, selected_year):
                  orientation='h', color_discrete_map=color_discrete_map)
     fig.update_layout(showlegend=True)
     fig.update_layout(yaxis_title=None)
+    fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, title=None, traceorder="normal"))
     return fig
 
 # App 3 Callbacks
@@ -562,6 +585,7 @@ def update_income_charts(selected_region, selected_year):
     stacked_fig.update_layout(yaxis_title=None)
     
     stacked_fig.update_layout(plot_bgcolor='white')
+    stacked_fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, title=None, traceorder="normal"))
     
     return donut_fig, stacked_fig
 
@@ -609,6 +633,7 @@ def update_scatter_matrix(year, regions):
                              yaxis3=dict(title='Income (in M)'))
     fig_splom.update_traces(marker=dict(line=dict(color='white', width=0.5)))
     fig_splom.update_layout(height=800)
+    fig_splom.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
     return fig_splom
 
 # Define top/bottom bar chart callback
@@ -693,7 +718,7 @@ def update_top_bottom_charts(year, regions):
     ], className='row')
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
 
 
 # In[ ]:
